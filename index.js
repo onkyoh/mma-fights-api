@@ -38,11 +38,13 @@ const updatedDb = async () => {
 
 //cron job to scrape at 1 20 everyday
 
-const runScrape = new CronJob('20 13 * * *', async () => {
-  await updatedDb()
-})
+await updatedDb()
 
-runScrape.start()
+// const runScrape = new CronJob('20 13 * * *', async () => {
+//   await updatedDb()
+// })
+
+// runScrape.start()
 
 //single endpoint to grab all the fights in the db
 
