@@ -24,6 +24,8 @@ app.use(cors());
 
 const updatedDb = async () => {
 
+  console.log('scraping')
+
   const scrapedData = await scrape()
 
   console.log('scraped: ', scrapedData)
@@ -39,15 +41,13 @@ const updatedDb = async () => {
   updateCollection()
 }
 
-//cron job to scrape everyday
+//interval
 
-const runScrape = new CronJob(process.env.CRON_STRING, () => {
-  console.log('ran')
+updatedDb()
+
+setInterval(() => {
   updatedDb()
-  console.log('completed')
-})
-
-runScrape.start()
+}, 24 * 60 * 60* 1000)
 
 //single endpoint to grab all the fights in the db
 
