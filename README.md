@@ -32,7 +32,7 @@ Each fight object contains the following parameters:
   - `name`: the name of the fighter
   - `link`: a link to the fighter's profile on Tapology
   - `last5`: an array containing the fighter's last 5 results
-- `fighterB`: an object containing the same parameters as `fighter1`
+- `fighterB`: an object containing the same parameters as `fighterA`
 
 
 ## Contributing ## 
