@@ -4,6 +4,7 @@ const dotenv = require('dotenv').config()
 const MongoClient = require('mongodb').MongoClient;
 const connectDB = require('./config/mongodb')
 const CronJob = require('cron').CronJob
+const scrape = require('./scrape')
 
 //initialize mongodb instance
 
@@ -36,15 +37,13 @@ const updatedDb = async () => {
   updateCollection()
 }
 
-//cron job to scrape at 1 20 everyday
+//cron job to scrape everyday
 
-await updatedDb()
+const runScrape = new CronJob('52 13 * * *', () => {
+  updatedDb()
+})
 
-// const runScrape = new CronJob('20 13 * * *', async () => {
-//   await updatedDb()
-// })
-
-// runScrape.start()
+runScrape.start()
 
 //single endpoint to grab all the fights in the db
 
