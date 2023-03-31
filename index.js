@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv').config()
 const MongoClient = require('mongodb').MongoClient;
 const connectDB = require('./config/mongodb')
+const CronJob = require('cron').CronJob
 
 //initialize mongodb instance
 
@@ -18,7 +19,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-//triggers scraping and updates database with returned data every 24hr
+//triggers scraping and updates db
 
 const updatedDb = async () => {
 
@@ -35,10 +36,13 @@ const updatedDb = async () => {
   updateCollection()
 }
 
-setInterval(async () => {
-  await updatedDb()
-}, 24 * 60 * 60 * 1000)
+//cron job to scrape at 1 20 everyday
 
+const runScrape = new CronJob('20 13 * * *', async () => {
+  await updatedDb()
+})
+
+runScrape.start()
 
 //single endpoint to grab all the fights in the db
 
