@@ -39,7 +39,7 @@ const updatedDb = async () => {
 
 //cron job to scrape everyday
 
-const runScrape = new CronJob('52 13 * * *', () => {
+const runScrape = new CronJob('55 13 * * *', () => {
   updatedDb()
 })
 
