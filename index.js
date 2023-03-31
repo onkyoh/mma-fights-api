@@ -26,6 +26,8 @@ const updatedDb = async () => {
 
   const scrapedData = await scrape()
 
+  console.log('scraped: ', scrapedData)
+
   const updateCollection = async() => {
     try {
       const updated = await db.updateOne({}, {$set: {data: scrapedData, updatedAt: new Date()}})
@@ -39,8 +41,10 @@ const updatedDb = async () => {
 
 //cron job to scrape everyday
 
-const runScrape = new CronJob('55 13 * * *', () => {
+const runScrape = new CronJob(process.env.CRON_STRING, () => {
+  console.log('ran')
   updatedDb()
+  console.log('completed')
 })
 
 runScrape.start()
