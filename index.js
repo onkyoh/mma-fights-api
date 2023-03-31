@@ -26,6 +26,8 @@ const updatedDb = async () => {
 
   const scrapedData = await scrape()
 
+  console.log('scraped: ', scrapedData)
+
   const updateCollection = async() => {
     try {
       const updated = await db.updateOne({}, {$set: {data: scrapedData, updatedAt: new Date()}})
