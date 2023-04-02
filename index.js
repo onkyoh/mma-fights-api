@@ -24,6 +24,8 @@ app.use(cors());
 
 const updatedDb = async () => {
 
+  console.log('scraper called')
+
   const scrapedData = await scrape()
 
   const updateCollection = async() => {
@@ -39,7 +41,8 @@ const updatedDb = async () => {
 
 //interval
 
-const job = new CronJob('50 13 * * *', () => {
+const job = new CronJob('0 14 * * *', () => {
+  console.log('cron ran')
   updatedDb()
 })
 
