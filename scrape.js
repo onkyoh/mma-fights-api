@@ -30,7 +30,7 @@ const scrape = async () => {
     const $event = cheerio.load(eventResponse.data);
 
     const fights = $event('li.fightCard:not(.picks)').map((_, el) => {
-      const billing = $(el).find('.billing').text().toLowerCase().includes('main') ? 'MAIN' : 'PRELIMS';
+      const main = $(el).find('.billing').text().toLowerCase().includes('main') ? true : false;
       const fighterA = {
         name: $(el).find('.fightCardFighterName.left a').text(),
         link: baseUrl + $(el).find('.fightCardFighterBout.left a').attr('href'),
@@ -40,7 +40,7 @@ const scrape = async () => {
         link: baseUrl + $(el).find('.fightCardFighterBout.right a').attr('href'),
       };
 
-      return { billing, fighterA, fighterB }
+      return { main, fighterA, fighterB }
     }).get()
 
     event.fights = fights
