@@ -1,4 +1,4 @@
-# MMA Fight Cards API #
+# MMA Fight Cards API
 
 ## Introduction
 
@@ -11,7 +11,7 @@ The API is currently hosted on Adaptable.io at https://mmafightcardsapi.adaptabl
 The API uses the following technologies:
 
 - MongoDB for database management
-- Puppeteer for web scraping
+- Cheerio for web scraping
 - Adaptable.io for hosting
 - Express for the server
 
@@ -31,10 +31,8 @@ Each fight object contains the following parameters:
 - `fighterA`: an object containing the following parameters:
   - `name`: the name of the fighter
   - `link`: a link to the fighter's profile on Tapology
-  - `last5`: an array containing the fighter's last 5 results
 - `fighterB`: an object containing the same parameters as `fighterA`
 
-
-## Contributing ## 
+## Contributing
 
 If anyone who sees this wants to add features simply make a request.

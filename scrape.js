@@ -1,85 +1,52 @@
-const puppeteer = require('puppeteer')
+const cheerio = require('cheerio')
+const axios = require('axios')
 
 const scrape = async () => {
-    const broswer = await puppeteer.launch()
-    const page = await broswer.newPage()
   
-    await page.goto('https://www.tapology.com/fightcenter?group=major&schedule=upcoming')
+  const baseUrl = 'https://www.tapology.com'
+
+  //load all the upcoming fightcards on tapology > select next 10 from major Orgs
+
+  const response = await axios.get(`${baseUrl}/fightcenter?group=major&schedule=upcoming`);
+  const $ = cheerio.load(response.data);
+
+  const majorOrgs = ['UFC', 'PFL', 'BELLATOR', 'ONE'];
   
-    //selects mma events from the desired orgs
+  let events = $('.left').map((_, el) => {
+    const title = $(el).find('.name').text().trim();
+    const date = $(el).find('.datetime').text().trim();
+    const link = baseUrl + $(el).find('.name a').attr('href');
   
-    let events = await page.evaluate(() => {
-        const majorOrgs = ['UFC', 'PFL', 'BELLATOR', 'ONE'];
-        return Array.from(document.querySelectorAll('.fcListing .main .left'), e => ({
-          title: e.querySelector('.name').innerText,
-          date: e.querySelector('.datetime').innerText,
-          link: e.querySelector('.name a').href
-      })).filter(event => {
-        return majorOrgs.some(org => event.title.includes(org))
-      }).slice(0, 5)
-    })
-  
-    //iterate over events => follow their link parameter => get the fightcard info and add it to each object
-  
-    for (const event of events) {
-  
-      await page.goto(event.link);
-  
-      const fights = await page.$$eval('#content > ul.fightCard > li.fightCard', (fight) => 
-        fight.map((e) => ({
-          main: e.querySelector('.billing').innerText.includes('MAIN') ? true : false,
-          fighterA: {
-            name: e.querySelector('.fightCardFighterBout.left a').innerText,
-            link: e.querySelector('.fightCardFighterBout.left a').href,
-            last5: []
-          },
-          fighterB: {
-            name: e.querySelector('.fightCardFighterBout.right a').innerText,
-            link: e.querySelector('.fightCardFighterBout.right a').href,
-            last5: []
-          }
-        }))
-      );
-  
-      event.fights = [...fights]
-  
-      //determining the last 5 results for fighterA and fighterB 
-  
-      for (const fight of fights) {
-  
-        const acceptedResults = ['win', 'loss', 'draw']
-        
-        await page.goto(fight.fighterA.link);
-  
-        const AresultsArray = await page.$$eval('li > div.result', (elements) =>
-            elements.map(e => e.getAttribute('data-result'))
-        )
-  
-        const filteredAResults = AresultsArray.filter(result => {
-          return acceptedResults.some(accepted => result.includes(accepted))
-        }).slice(0, 5);
-  
-        fight.fighterA.last5 = [...filteredAResults]
-        
-        //fighterB results
-  
-        await page.goto(fight.fighterB.link);
-  
-        const BresultsArray = await page.$$eval('li > div.result', (elements) =>
-          elements.map(e => e.getAttribute('data-result'))
-        )
-  
-        const filteredBResults = BresultsArray.filter(result => {
-          return acceptedResults.some(accepted => result.includes(accepted))
-        }).slice(0, 5);
-  
-        fight.fighterB.last5 = [...filteredBResults]
-      }
-    }
-  
-    await broswer.close()
-  
-    return events
+    return { title, date, link };
+  })
+  .get()
+  .filter((event) => majorOrgs.some((org) => event.title.includes(org)))
+  .slice(0, 10);
+
+  //select fight info from each fight on each fightCard
+
+  for (const event of events) {
+    const eventResponse = await axios.get(event.link);
+    const $event = cheerio.load(eventResponse.data);
+
+    const fights = $event('li.fightCard:not(.picks)').map((_, el) => {
+      const billing = $(el).find('.billing').text().toLowerCase().includes('main') ? 'MAIN' : 'PRELIMS';
+      const fighterA = {
+        name: $(el).find('.fightCardFighterName.left a').text(),
+        link: baseUrl + $(el).find('.fightCardFighterBout.left a').attr('href'),
+      };
+      const fighterB = {
+        name: $(el).find('.fightCardFighterName.right a').text(),
+        link: baseUrl + $(el).find('.fightCardFighterBout.right a').attr('href'),
+      };
+
+      return { billing, fighterA, fighterB }
+    }).get()
+
+    event.fights = fights
   }
 
-  module.exports = scrape
+  return events
+}
+
+module.exports = scrape
