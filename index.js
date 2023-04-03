@@ -25,6 +25,10 @@ const updatedDb = async () => {
 
   console.log('scraper called')
 
+  while (!db) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+
   const scrapedData = await scrape()
 
   const updateCollection = async() => {
@@ -47,7 +51,11 @@ setInterval(updatedDb, 24 * 60 * 60 * 1000);
 
 //single endpoint to grab all the fights in the db
 
-app.get('/cards', async (req, res) => {
+app.get('/', async (req, res) => {
+  
+  while (!db) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
 
   const data = await db.findOne({})
 
