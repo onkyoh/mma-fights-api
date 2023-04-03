@@ -1,14 +1,19 @@
 const MongoClient = require('mongodb').MongoClient;
 
 const connectDB = async () => {
+
+    const url = process.env.DATABASE_URL || process.env.TEST_URL
     try {
         const client = await MongoClient.connect(
-            process.env.DATABASE_URL || process.env.TEST_URL,
+            url,
             { useNewUrlParser: true, useUnifiedTopology: true }
         )
-        return client.db('mmafightcardsapi-main-db-00d096174c0').collection('cards')
+        const db = client.db('mmafightcardsapi-main-db-00d096174c0')
+        const collection = db.collection('cards')
+        return collection
     } catch (err) {
-        throw err
+        console.log(err)
+        process.exit(1)
     }
 }
 
