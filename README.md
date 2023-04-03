@@ -17,7 +17,7 @@ The API uses the following technologies:
 
 ## Data
 
-### /cards
+### /
 
 The `/` endpoint returns an array of the next 5 upcoming MMA events from major organizations. Each event object contains the following parameters:
 
