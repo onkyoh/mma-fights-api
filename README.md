@@ -19,10 +19,10 @@ The API uses the following technologies:
 
 ### /
 
-The `/` endpoint returns an array of the next 5 upcoming MMA events from major organizations. Each event object contains the following parameters:
+The `/` endpoint returns an array of the next  upcoming MMA events from major organizations. Each event object contains the following parameters:
 
 - `date`: the date of the event
-- `name`: the name of the event
+- `title`: the name of the event
 - `fights`: an array containing several fight objects
 
 Each fight object contains the following parameters:
