@@ -6,6 +6,8 @@ This is an API that scrapes data from Tapology.com for upcoming MMA events. The 
 
 The API is currently hosted on Adaptable.io at https://mmafightcardsapi.adaptable.app.
 
+My website which this API was built for is hosted via Netlify at https://fightcardshq.com.
+
 ## Technology
 
 The API uses the following technologies:
