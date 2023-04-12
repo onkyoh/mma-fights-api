@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const cron = require('node-cron')
 require('dotenv').config()
 const MongoClient = require('mongodb').MongoClient;
 const connectDB = require('./config/mongodb')
@@ -9,8 +10,6 @@ const scrape = require('./scrape')
 
 const init = async () => {
  const db = await connectDB()
-
- console.log(new Date())
 
  //setup express
 
@@ -37,12 +36,11 @@ const init = async () => {
     updateCollection()
   }
 
-  //interval
+  //run everyday at 10am server time = 6am ET
 
-  updatedDb()
-
-  setInterval(updatedDb, 24 * 60 * 60 * 1000);
-
+  cron.schedule('0 10 * * *', () => {
+    updatedDb()
+  })
 
   //single endpoint to grab all the fights in the db
 
@@ -65,7 +63,6 @@ const init = async () => {
   app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
   });
-
 
 }
 
