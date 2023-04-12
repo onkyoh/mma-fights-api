@@ -10,6 +10,8 @@ const scrape = require('./scrape')
 const init = async () => {
  const db = await connectDB()
 
+ console.log(new Date())
+
  //setup express
 
   const app = express();
