@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const cron = require('node-cron')
+const schedule = require('node-schedule')
 require('dotenv').config()
 const MongoClient = require('mongodb').MongoClient;
 const connectDB = require('./config/mongodb')
@@ -38,7 +38,7 @@ const init = async () => {
 
   //run everyday at 10am server time = 6am ET
 
-  cron.schedule('0 10 * * *', () => {
+  const job = schedule.scheduleJob('16 22 * * *', function() {
     updatedDb()
   })
 
