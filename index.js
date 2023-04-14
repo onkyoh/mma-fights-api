@@ -38,7 +38,7 @@ const init = async () => {
 
   //run everyday at 10am server time = 6am ET
 
-  const job = schedule.scheduleJob('16 22 * * *', function() {
+  const job = schedule.scheduleJob('0 10 * * *', function() {
     updatedDb()
   })
 
