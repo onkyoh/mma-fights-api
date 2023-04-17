@@ -36,18 +36,11 @@ const init = async () => {
     updateCollection()
   }
 
-  //run everyday at 10am GMT
+  //run everyday at 6am ET
 
-  const checkTime = () => {
-    const currentHour = new Date().getUTCHours()
-    if (currentHour == 10) {
-      updatedDb()
-    }
-  }
-
-  checkTime()
-
-  setInterval(checkTime, 60 * 60 * 1000)
+  const job = schedule.scheduleJob('0 6 * * *', function() {
+    updatedDb()
+  })
 
   //single endpoint to grab all the fights in the db
 
