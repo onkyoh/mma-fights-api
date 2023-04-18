@@ -36,10 +36,24 @@ const init = async () => {
     updateCollection()
   }
 
-  //run everyday at 6am ET
+  // post endpoint triggered by AWS lambda function to trigger scrape
 
-  const job = schedule.scheduleJob('0 6 * * *', function() {
-    updatedDb()
+  app.post('/scrape', async(req,res) => {
+
+    const { key } = req.body
+
+    if (!key || key !== process.env.TRIGGER_KEY) {
+      return res.status(401).send({
+        error: true,
+        message: 'invalid trigger key'
+      })
+    } else {
+      updatedDb()
+      return res.status(200).send({
+        error: false,
+        message: 'scrape triggered'
+      })
+    }
   })
 
   //single endpoint to grab all the fights in the db
@@ -51,7 +65,7 @@ const init = async () => {
     if (data) {
       return res.status(200).send(data)
     } else {
-      return res.status(404).send({
+      return res.status(500).send({
         error: true,
         message: 'error during retrieval'
       })
