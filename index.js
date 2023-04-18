@@ -48,7 +48,7 @@ const init = async () => {
         message: 'invalid trigger key'
       })
     } else {
-      updatedDb()
+      await updatedDb()
       return res.status(200).send({
         error: false,
         message: 'scrape triggered'
