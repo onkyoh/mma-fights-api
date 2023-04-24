@@ -20,7 +20,7 @@ const scrape = async () => {
     return { title, date, link };
   })
   .get()
-  .filter((event) => majorOrgs.some((org) => event.title.includes(org)))
+  .filter((event) => majorOrgs.some((org) => event.title.toUpperCase().includes(org)))
   .slice(0, 10);
 
   //select fight info from each fight on each fightCard
