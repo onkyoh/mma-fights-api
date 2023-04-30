@@ -4,7 +4,7 @@ const schedule = require('node-schedule')
 require('dotenv').config()
 const MongoClient = require('mongodb').MongoClient;
 const connectDB = require('./config/mongodb')
-const scrape = require('./scrape')
+const scrape = require('./utils/scrape')
 
 //initialize mongodb instance
 

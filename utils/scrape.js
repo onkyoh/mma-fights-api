@@ -46,7 +46,7 @@ const scrape = async () => {
     event.fights = fights
   }
 
-  return events
+  return events.filter(event => event.fights.length > 4)
 }
 
 module.exports = scrape
