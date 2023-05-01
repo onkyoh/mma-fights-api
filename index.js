@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const schedule = require('node-schedule')
+const compression = require('compression')
 require('dotenv').config()
 const MongoClient = require('mongodb').MongoClient;
 const connectDB = require('./config/mongodb')
@@ -16,6 +16,7 @@ const init = async () => {
   const app = express();
   app.use(express.json());
   app.use(cors());
+  app.use(compression());
 
   //triggers scraping and updates db
 
