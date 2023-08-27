@@ -10,7 +10,7 @@ const scrape = async () => {
   const response = await axios.get(`${baseUrl}/fightcenter?group=major&schedule=upcoming`);
   const $ = cheerio.load(response.data);
 
-  const majorOrgs = ['UFC', 'PFL', 'BELLATOR', 'ONE'];
+  const majorOrgs = ['UFC', 'PFL', 'BELLATOR', 'ONE', 'RIZIN'];
   
   let events = $('.left').map((_, el) => {
     const title = $(el).find('.name').text().trim();
