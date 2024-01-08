@@ -1,17 +1,17 @@
-const express = require('express');
-const cors = require('cors');
-const compression = require('compression')
-require('dotenv').config()
-const MongoClient = require('mongodb').MongoClient;
-const connectDB = require('./config/mongodb')
-const scrape = require('./utils/scrape')
+const express = require("express");
+const cors = require("cors");
+const compression = require("compression");
+require("dotenv").config();
+const MongoClient = require("mongodb").MongoClient;
+const connectDB = require("./config/mongodb");
+const scrape = require("./utils/scrape");
 
 //initialize mongodb instance
 
 const init = async () => {
- const db = await connectDB()
+  const db = await connectDB();
 
- //setup express
+  //setup express
 
   const app = express();
   app.use(express.json());
@@ -21,55 +21,55 @@ const init = async () => {
   //triggers scraping and updates db
 
   const updatedDb = async () => {
+    console.log("scraper called");
 
-    console.log('scraper called')
+    const scrapedData = await scrape();
 
-    const scrapedData = await scrape()
-
-    const updateCollection = async() => {
+    const updateCollection = async () => {
       try {
-        const updated = await db.updateOne({}, {$set: {data: scrapedData, updatedAt: new Date()}})
+        const updated = await db.updateOne(
+          {},
+          { $set: { data: scrapedData, updatedAt: new Date() } }
+        );
       } catch (err) {
-        console.log(err)
+        console.log(err);
       }
-    }
+    };
 
-    updateCollection()
-  }
+    updateCollection();
+  };
 
   // post endpoint triggered by AWS lambda function to trigger scrape
 
-  app.post('/scrape', async(req,res) => {
-
-    const { key } = req.body
+  app.post("/scrape", async (req, res) => {
+    const { key } = req.body;
 
     if (!key || key !== process.env.TRIGGER_KEY) {
       return res.status(401).send({
         error: true,
-        message: 'invalid trigger key'
-      })
+        message: "invalid trigger key",
+      });
     } else {
-      await updatedDb()
+      await updatedDb();
       return res.status(200).send({
         error: false,
-        message: 'scrape triggered'
-      })
+        message: "scrape triggered",
+      });
     }
-  })
+  });
 
   //single endpoint to grab all the fights in the db
 
-  app.get('/', async (req, res) => {
-
-    const data = await db.findOne({})
+  app.get("/", async (req, res) => {
+    const data = await db.findOne({});
 
     if (data) {
-      return res.status(200).send(data)
+      return res.status(200).send(data);
     } else {
       return res.status(500).send({
         error: true,
-        message: 'error during retrieval'
-      })
+        message: "error during retrieval",
+      });
     }
   });
 
@@ -78,9 +78,6 @@ const init = async () => {
   app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
   });
+};
 
-}
-
-init()
-
-
+init();
