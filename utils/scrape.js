@@ -22,6 +22,11 @@ const scrape = async () => {
     .filter((event) =>
       majorOrgs.some((org) => event.title.toUpperCase().includes(org))
     )
+    .filter(
+      (event) =>
+        majorOrgs.some((org) => event.title.toUpperCase().includes(org)) &&
+        !event.title.toUpperCase().includes("ONE FRIDAY FIGHTS")
+    )
     .slice(0, 10);
 
   for (const event of events) {
