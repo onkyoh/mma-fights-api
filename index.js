@@ -1,13 +1,13 @@
-const express = require("express");
-const cors = require("cors");
-const compression = require("compression");
-require("dotenv").config();
-const MongoClient = require("mongodb").MongoClient;
-const connectDB = require("./config/mongodb");
-const scrape = require("./utils/scrape");
+import express from "express";
+import cors from "cors";
+import compression from "compression";
+import { config } from "dotenv";
+import { connectDB } from "./config/mongodb.js";
+import { scrape } from "./utils/scrape.js";
+import { scrapedDataSchema } from "./utils/schema.js";
 
 //initialize mongodb instance
-
+config();
 const init = async () => {
   const db = await connectDB();
 
@@ -21,22 +21,16 @@ const init = async () => {
   //triggers scraping and updates db
 
   const updatedDb = async () => {
-    console.log("scraper called");
-
-    const scrapedData = await scrape();
-
-    const updateCollection = async () => {
-      try {
-        const updated = await db.updateOne(
-          {},
-          { $set: { data: scrapedData, updatedAt: new Date() } }
-        );
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    updateCollection();
+    try {
+      const scrapedData = await scrape();
+      scrapedDataSchema.parse(scrapedData);
+      const updated = await db.updateOne(
+        {},
+        { $set: { data: scrapedData, updatedAt: new Date() } }
+      );
+    } catch (err) {
+      throw err;
+    }
   };
 
   // post endpoint triggered by AWS lambda function to trigger scrape
@@ -50,11 +44,19 @@ const init = async () => {
         message: "invalid trigger key",
       });
     } else {
-      await updatedDb();
-      return res.status(200).send({
-        error: false,
-        message: "scrape triggered",
-      });
+      try {
+        const scraperResponse = await updatedDb();
+        return res.status(200).send({
+          error: false,
+          message: "scrape successful",
+        });
+      } catch (err) {
+        console.error(err);
+        return res.status(500).send({
+          error: true,
+          message: "error during scraping",
+        });
+      }
     }
   });
 
