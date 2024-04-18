@@ -24,6 +24,7 @@ const init = async () => {
     try {
       const scrapedData = await scrape();
       scrapedDataSchema.parse(scrapedData);
+      console.log(scrapedData);
       const updated = await db.updateOne(
         {},
         { $set: { data: scrapedData, updatedAt: new Date() } }

@@ -116,7 +116,7 @@ const scrape = async () => {
 
     return events.filter((event) => event.fights.length > 0); // Changed to filter out events with no fights
   } catch (error) {
-    console.error("Scraping error");
+    console.error("Scraping error:", error);
     return null;
   }
 };
