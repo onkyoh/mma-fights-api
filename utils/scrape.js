@@ -50,7 +50,8 @@ const scrape = async () => {
               "span.px-1\\.5.md\\:px-1.leading-\\[23px\\].text-sm.md\\:text-\\[13px\\].text-neutral-50.rounded"
             )
             .text()
-            .trim();
+            .trim()
+            .substring(0, 3);
 
           // Find the container that encapsulates each fighter's info
           const fighterContainers = $event(el).find(

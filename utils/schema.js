@@ -9,7 +9,7 @@ const fighterSchema = z.object({
 
 const fightSchema = z.object({
   main: z.boolean(),
-  weight: z.string().min(1),
+  weight: z.string().max(3),
   fighterA: fighterSchema,
   fighterB: fighterSchema,
 });

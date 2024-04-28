@@ -6,81 +6,68 @@ import { connectDB } from "./config/mongodb.js";
 import { scrape } from "./utils/scrape.js";
 import { scrapedDataSchema } from "./utils/schema.js";
 
-//initialize mongodb instance
 config();
+
 const init = async () => {
-  const db = await connectDB();
+  try {
+    const db = await connectDB();
+    const app = express();
+    app.use(express.json());
+    app.use(cors());
+    app.use(compression());
 
-  //setup express
+    app.post("/scrape", async (req, res) => {
+      const { key } = req.body;
+      if (!key || key !== process.env.TRIGGER_KEY) {
+        return res
+          .status(401)
+          .send({ error: true, message: "Invalid trigger key" });
+      }
 
-  const app = express();
-  app.use(express.json());
-  app.use(cors());
-  app.use(compression());
-
-  //triggers scraping and updates db
-
-  const updatedDb = async () => {
-    try {
-      const scrapedData = await scrape();
-      scrapedDataSchema.parse(scrapedData);
-      console.log(scrapedData);
-      const updated = await db.updateOne(
-        {},
-        { $set: { data: scrapedData, updatedAt: new Date() } }
-      );
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  // post endpoint triggered by AWS lambda function to trigger scrape
-
-  app.post("/scrape", async (req, res) => {
-    const { key } = req.body;
-
-    if (!key || key !== process.env.TRIGGER_KEY) {
-      return res.status(401).send({
-        error: true,
-        message: "invalid trigger key",
-      });
-    } else {
       try {
-        const scraperResponse = await updatedDb();
-        return res.status(200).send({
-          error: false,
-          message: "scrape successful",
-        });
+        await scrapeAndUpdateDb(db);
+        return res
+          .status(200)
+          .send({ error: false, message: "Scrape successful" });
       } catch (err) {
         console.error(err);
-        return res.status(500).send({
-          error: true,
-          message: "error during scraping",
-        });
+        return res
+          .status(500)
+          .send({ error: true, message: "Error during scraping" });
       }
-    }
-  });
+    });
 
-  //single endpoint to grab all the fights in the db
+    app.get("/", async (req, res) => {
+      try {
+        const data = await db.findOne({});
+        return data
+          ? res.status(200).send(data)
+          : res.status(404).send({ error: true, message: "Data not found" });
+      } catch (err) {
+        console.error(err);
+        return res
+          .status(500)
+          .send({ error: true, message: "Error retrieving data" });
+      }
+    });
 
-  app.get("/", async (req, res) => {
-    const data = await db.findOne({});
+    const port = process.env.PORT || 1000;
+    app.listen(port, () => {
+      console.log(`Server listening on port ${port}`);
+    });
+  } catch (err) {
+    console.error("Failed to initialize application:", err);
+  }
+};
 
-    if (data) {
-      return res.status(200).send(data);
-    } else {
-      return res.status(500).send({
-        error: true,
-        message: "error during retrieval",
-      });
-    }
-  });
-
-  const port = process.env.PORT || 1000;
-
-  app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
-  });
+const scrapeAndUpdateDb = async (db) => {
+  const scrapedData = await scrape();
+  // Ensure data is valid before updating database
+  scrapedDataSchema.parse(scrapedData);
+  await db.updateOne(
+    {},
+    { $set: { data: scrapedData, updatedAt: new Date() } }
+  );
 };
 
 init();
