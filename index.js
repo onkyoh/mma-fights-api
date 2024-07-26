@@ -4,7 +4,6 @@ import compression from "compression";
 import { config } from "dotenv";
 import { connectDB } from "./config/mongodb.js";
 import { scrape } from "./utils/scrape.js";
-import { scrapedDataSchema } from "./utils/schema.js";
 
 config();
 
@@ -62,8 +61,6 @@ const init = async () => {
 
 const scrapeAndUpdateDb = async (db) => {
   const scrapedData = await scrape();
-  // Ensure data is valid before updating database
-  scrapedDataSchema.parse(scrapedData);
   await db.updateOne(
     {},
     { $set: { data: scrapedData, updatedAt: new Date() } }
