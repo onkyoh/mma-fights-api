@@ -1,7 +1,7 @@
 import { MongoClient } from "mongodb";
 
 const connectDB = async () => {
-  const url = process.env.DATABASE_URL || process.env.TEST_URL;
+  const url = process.env.DATABASE_URL;
   try {
     const client = await MongoClient.connect(url, {
       useNewUrlParser: true,
