@@ -1,5 +1,6 @@
-import cheerio from "cheerio";
+import * as cheerio from "cheerio";
 import { gotScraping } from "got-scraping";
+
 
 const scrape = async () => {
   try {
@@ -35,19 +36,22 @@ const scrape = async () => {
       )
       .slice(0, 10);
     for (const event of events) {
-      const eventResponse = await gotScraping({
-        url: event.link,
-      });
+       
+        const eventResponse = await gotScraping({
+          url: event.link,
+        });
 
       if (eventResponse.statusCode !== 200) {
         throw new Error("Failed to fetch for: ", event.link);
       }
 
-      const $event = cheerio.load(eventResponse.data);
+      const $ = cheerio.load(eventResponse.body);
 
-      const fights = $event("li.border-b.border-dotted.border-tap_6")
-        .map((_, el) => {
-          const main = $event(el)
+      const $fights = $('ul[data-event-view-toggle-target="list"] li').toArray()
+
+      const fights = $fights
+        .map((el) => {
+          const main = $(el)
             .find(
               "a.hover\\:border-solid.hover\\:border-b.hover\\:border-neutral-950.hover\\:text-neutral-950"
             )
@@ -56,7 +60,7 @@ const scrape = async () => {
             .includes("main");
 
           // Extract the weight class
-          const weight = $event(el)
+          const weight = $(el)
             .find(
               "span.px-1\\.5.md\\:px-1.leading-\\[23px\\].text-sm.md\\:text-\\[13px\\].text-neutral-50.rounded"
             )
@@ -65,7 +69,7 @@ const scrape = async () => {
             .substring(0, 3);
 
           // Find the container that encapsulates each fighter's info
-          const fighterContainers = $event(el).find(
+          const fighterContainers = $(el).find(
             ".div.flex.flex-row.gap-0\\.5.md\\:gap-0.w-full"
           );
 
@@ -121,7 +125,7 @@ const scrape = async () => {
 
           return { main, weight, fighterA, fighterB };
         })
-        .get();
+        
 
       event.fights = fights;
     }
