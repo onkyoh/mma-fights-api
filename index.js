@@ -60,15 +60,11 @@ const init = async () => {
 };
 
 const scrapeAndUpdateDb = async (db) => {
-  try {
-    const scrapedData = await scrape();
-    await db.updateOne(
-      {},
-      { $set: { data: scrapedData, updatedAt: new Date() } }
-    );
-  } catch (err) {
-    throw new Error("Failed to scrape and update database:", err);
-  }
+  const scrapedData = await scrape();
+  await db.updateOne(
+    {},
+    { $set: { data: scrapedData, updatedAt: new Date() } }
+  );
 };
 
 init();
