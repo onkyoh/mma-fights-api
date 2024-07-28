@@ -1,17 +1,14 @@
 import cheerio from "cheerio";
-import { gotScraping } from "got-scraping";
+import axios from "axios";
 
 const scrape = async () => {
   try {
     const baseUrl = "https://www.tapology.com";
-    const response = await gotScraping({
-      url: `${baseUrl}/fightcenter?group=major&schedule=upcoming`,
-      proxyUrl: process.env.PROXY_URL,
-    });
-    if (response.statusCode !== 200) {
-      throw new Error(`Failed to fetch events`);
-    }
-    const $ = cheerio.load(response.body);
+    const response = axios.get(
+      `${baseUrl}/fightcenter?group=major&schedule=upcoming`
+    );
+
+    const $ = cheerio.load(response.data);
 
     const majorOrgs = ["UFC", "PFL", "BELLATOR", "ONE", "RIZIN"];
 
@@ -34,15 +31,11 @@ const scrape = async () => {
       )
       .slice(0, 10);
     for (const event of events) {
-      const eventResponse = await gotScraping({
-        url: event.link,
-        proxyUrl: process.env.PROXY_URL,
-      });
+      const eventResponse = axios.get(
+        `${baseUrl}/fightcenter?group=major&schedule=upcoming`
+      );
 
-      if (eventResponse.statusCode !== 200) {
-        throw new Error(`Failed to fetch event: ${event.title}`);
-      }
-      const $event = cheerio.load(eventResponse.body);
+      const $event = cheerio.load(eventResponse.data);
 
       const fights = $event("li.border-b.border-dotted.border-tap_6")
         .map((_, el) => {
