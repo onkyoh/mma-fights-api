@@ -67,7 +67,7 @@ const scrapeAndUpdateDb = async (db) => {
       { $set: { data: scrapedData, updatedAt: new Date() } }
     );
   } catch (err) {
-    throw error("Failed to scrape and update database:", err);
+    throw new Error("Failed to scrape and update database:", err);
   }
 };
 
