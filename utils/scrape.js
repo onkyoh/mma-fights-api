@@ -1,13 +1,18 @@
 import cheerio from "cheerio";
-import axios from "axios";
+import { gotScraping } from "got-scraping";
 
 const scrape = async () => {
   try {
     const baseUrl = "https://www.tapology.com";
-    const response = await axios.get(
-      `${baseUrl}/fightcenter?group=major&schedule=upcoming`
-    );
-    const $ = cheerio.load(response.data);
+    const response = await gotScraping({
+      url: `${baseUrl}/fightcenter?group=major&schedule=upcoming`,
+    });
+
+    if (response.statusCode !== 200) {
+      throw new Error("Failed to scrape data from Tapology");
+    }
+
+    const $ = cheerio.load(response.body);
 
     const majorOrgs = ["UFC", "PFL", "BELLATOR", "ONE", "RIZIN"];
 
@@ -29,9 +34,15 @@ const scrape = async () => {
           !event.title.toUpperCase().includes("ONE FRIDAY FIGHTS")
       )
       .slice(0, 10);
-
     for (const event of events) {
-      const eventResponse = await axios.get(event.link);
+      const eventResponse = await gotScraping({
+        url: event.link,
+      });
+
+      if (eventResponse.statusCode !== 200) {
+        throw new Error("Failed to fetch for: ", event.link);
+      }
+
       const $event = cheerio.load(eventResponse.data);
 
       const fights = $event("li.border-b.border-dotted.border-tap_6")
@@ -118,7 +129,7 @@ const scrape = async () => {
     return events.filter((event) => event.fights.length > 0); // Changed to filter out events with no fights
   } catch (error) {
     console.error("Scraping error:", error);
-    return null;
+    throw new Error("Error during scraping: ", error);
   }
 };
 
