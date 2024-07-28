@@ -6,7 +6,11 @@ const scrape = async () => {
     const baseUrl = "https://www.tapology.com";
     const response = await gotScraping({
       url: `${baseUrl}/fightcenter?group=major&schedule=upcoming`,
+      proxyUrl: process.env.PROXY_URL,
     });
+    if (response.statusCode !== 200) {
+      throw new Error(`Failed to fetch events`);
+    }
     const $ = cheerio.load(response.body);
 
     const majorOrgs = ["UFC", "PFL", "BELLATOR", "ONE", "RIZIN"];
@@ -29,11 +33,15 @@ const scrape = async () => {
           !event.title.toUpperCase().includes("ONE FRIDAY FIGHTS")
       )
       .slice(0, 10);
-
     for (const event of events) {
       const eventResponse = await gotScraping({
         url: event.link,
+        proxyUrl: process.env.PROXY_URL,
       });
+
+      if (eventResponse.statusCode !== 200) {
+        throw new Error(`Failed to fetch event: ${event.title}`);
+      }
       const $event = cheerio.load(eventResponse.body);
 
       const fights = $event("li.border-b.border-dotted.border-tap_6")
