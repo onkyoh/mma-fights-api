@@ -2,14 +2,13 @@
 import * as cheerio from "cheerio";
 import { gotScraping } from "got-scraping";
 
+const baseUrl = "https://www.tapology.com";
 
 const scrape = async () => {
   try {
-    const baseUrl = "https://www.tapology.com";
     const response = await gotScraping({
       url: `${baseUrl}/fightcenter?group=major&schedule=upcoming`,
     });
-
 
     if (response.statusCode !== 200) {
       throw new Error("Failed to scrape data from Tapology");
@@ -19,39 +18,33 @@ const scrape = async () => {
 
     const majorOrgs = ["UFC", "PFL", "BELLATOR", "ONE", "RIZIN"];
 
-    let events = $(".fightcenterEvents > div")
-      .map((_, el) => {
-        const title = $(el).find(".promotion a").first().text().trim();
+    const events = $(".fightcenterEvents > div").toArray()
+      .map((el) => {
+        const eventLink = $(el).find(".promotion a")
         const date = $(el).find(".promotion span").eq(2).text().trim();
-        const link = baseUrl + $(el).find(".promotion a").first().attr("href");
-
-        return { title, date, link };
+        return { title: eventLink.first().text().trim(), date, link: baseUrl + eventLink.first().attr("href") };
       })
-      .get()
-      .filter((event) =>
-        majorOrgs.some((org) => event.title.toUpperCase().includes(org))
-      )
       .filter(
         (event) =>
           majorOrgs.some((org) => event.title.toUpperCase().includes(org)) &&
           !event.title.toUpperCase().includes("ONE FRIDAY FIGHTS")
       )
       .slice(0, 10);
-    for (const event of events) {
-       
-        const eventResponse = await gotScraping({
-          url: event.link,
-        });
 
+      const eventsWithFights = await Promise.all(
+        events.map(async (event) => {
+        
+          const eventResponse = await gotScraping({
+            url: event.link,
+          });
+  
       if (eventResponse.statusCode !== 200) {
         throw new Error("Failed to fetch for: ", event.link);
       }
 
       const $ = cheerio.load(eventResponse.body);
 
-      const $fights = $('ul[data-event-view-toggle-target="list"] li').toArray()
-
-      const fights = $fights
+      const fights = $('ul[data-event-view-toggle-target="list"] li').toArray()
         .map((el) => {
           const main = $(el)
             .find(
@@ -127,12 +120,11 @@ const scrape = async () => {
 
           return { main, weight, fighterA, fighterB };
         })
-        
-
-      event.fights = fights;
+        event.fights = fights;
+        return event;
     }
-
-    return events.filter((event) => event.fights.length > 0); // Changed to filter out events with no fights
+  ))
+    return eventsWithFights.filter((event) => event.fights.length > 0); // Changed to filter out events with no fights
   } catch (error) {
     console.error("Scraping error:", error);
     throw new Error("Error during scraping: ", error);
