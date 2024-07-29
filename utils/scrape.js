@@ -1,3 +1,4 @@
+
 import * as cheerio from "cheerio";
 import { gotScraping } from "got-scraping";
 
@@ -8,6 +9,7 @@ const scrape = async () => {
     const response = await gotScraping({
       url: `${baseUrl}/fightcenter?group=major&schedule=upcoming`,
     });
+
 
     if (response.statusCode !== 200) {
       throw new Error("Failed to scrape data from Tapology");
@@ -137,4 +139,9 @@ const scrape = async () => {
   }
 };
 
-export { scrape };
+const scrapeAndUpdateDb = async (db) => {
+  const scrapedData = await scrape();
+  await db.updateOne({}, { $set: { data: scrapedData, updatedAt: new Date() } });
+};
+
+export { scrapeAndUpdateDb };
