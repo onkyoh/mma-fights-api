@@ -2,18 +2,16 @@ import express from 'express';
 import cors from 'cors';
 import compression from 'compression';
 import morgan from 'morgan';
-import { scrapeAndUpdateDb } from '../utils/scrape.js';
+import { scrapeEvents, scrapeEventDetails } from '../utils/scrape.js';
 
 export const createServer = (db) => {
   const app = express();
 
-  // Middlewares
   app.use(morgan('tiny'));
   app.use(express.json());
   app.use(cors());
   app.use(compression());
 
-  // Routes
   app.post('/scrape', async (req, res) => {
     const { key } = req.body;
     if (!key || key !== process.env.TRIGGER_KEY) {
@@ -21,11 +19,30 @@ export const createServer = (db) => {
     }
 
     try {
-      await scrapeAndUpdateDb(db);
-      return res.status(200).send({ error: false, message: 'Scrape successful' });
+      const events = await scrapeEvents();
+      console.log('Scraped events:', events);
+
+      for (const event of events) {
+        try {
+          const eventDetails = await scrapeEventDetails([event]);
+          const eventData = eventDetails[0];
+
+          await db.updateOne(
+            {},
+            { $push: { data: eventData }, $set: { updatedAt: new Date() } },
+            { upsert: true }
+          );
+
+          console.log(`Updated event: ${event.title}`);
+        } catch (detailError) {
+          console.error(`Failed to scrape/update details for event ${event.title}:`, detailError);
+        }
+      }
+
+      return res.status(200).send({ error: false, message: 'Scraping and updating completed' });
     } catch (err) {
-      console.error(err);
-      return res.status(500).send({ error: true, message: 'Error during scraping' });
+      console.error('Error during scraping process:', err);
+      return res.status(500).send({ error: true, message: 'Error during scraping process' });
     }
   });
 
@@ -36,7 +53,7 @@ export const createServer = (db) => {
         ? res.status(200).send(data)
         : res.status(404).send({ error: true, message: 'Data not found' });
     } catch (err) {
-      console.error(err);
+      console.error('Error retrieving data:', err);
       return res.status(500).send({ error: true, message: 'Error retrieving data' });
     }
   });
