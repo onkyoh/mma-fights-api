@@ -20,24 +20,10 @@ export const createServer = (db) => {
 
     try {
       const events = await scrapeEvents();
-      console.log('Scraped events:', events);
+      const eventDetails = await scrapeEventDetails(events);
+      await db.updateOne({}, {$set: {data: eventDetails, updatedAt: new Date()}})
 
-      for (const event of events) {
-        try {
-          const eventDetails = await scrapeEventDetails([event]);
-          const eventData = eventDetails[0];
 
-          await db.updateOne(
-            {},
-            { $push: { data: eventData }, $set: { updatedAt: new Date() } },
-            { upsert: true }
-          );
-
-          console.log(`Updated event: ${event.title}`);
-        } catch (detailError) {
-          console.error(`Failed to scrape/update details for event ${event.title}:`, detailError);
-        }
-      }
 
       return res.status(200).send({ error: false, message: 'Scraping and updating completed' });
     } catch (err) {
