@@ -39,10 +39,10 @@ const scrapeEvents = async () => {
 };
 
 
-const scrapeEventDetails = async (eventLinks) => {
+const scrapeEventDetails = async (events) => {
   try {
     const eventsWithFights = await Promise.all(
-      eventLinks.map(async (event) => {
+      events.map(async (event) => {
         const eventResponse = await gotScraping({
           url: event.link,
         });
