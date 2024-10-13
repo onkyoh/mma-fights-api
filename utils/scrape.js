@@ -8,7 +8,6 @@ const scrapeEvents = async () => {
     const response = await gotScraping({
       url: `${baseUrl}/fightcenter?group=major&schedule=upcoming`,
     });
-    
 
     if (response.statusCode !== 200) {
       throw new Error("Failed to scrape data from Tapology");
@@ -18,11 +17,16 @@ const scrapeEvents = async () => {
 
     const majorOrgs = ["UFC", "PFL", "BELLATOR", "ONE", "RIZIN"];
 
-    const events = $(".fightcenterEvents > div").toArray()
+    const events = $(".fightcenterEvents > div")
+      .toArray()
       .map((el) => {
         const eventLink = $(el).find(".promotion a");
-        const date = $(el).find(".promotion span").eq(2).text().trim();
-        return { title: eventLink.first().text().trim(), date, link: baseUrl + eventLink.first().attr("href") };
+        const date = $(el).find(".promotion span").eq(3).text().trim();
+        return {
+          title: eventLink.first().text().trim(),
+          date,
+          link: baseUrl + eventLink.first().attr("href"),
+        };
       })
       .filter(
         (event) =>
@@ -38,7 +42,6 @@ const scrapeEvents = async () => {
   }
 };
 
-
 const scrapeEventDetails = async (events) => {
   try {
     const eventsWithFights = await Promise.all(
@@ -53,7 +56,8 @@ const scrapeEventDetails = async (events) => {
 
         const $ = cheerio.load(eventResponse.body);
 
-        const fights = $('ul[data-event-view-toggle-target="list"] li').toArray()
+        const fights = $('ul[data-event-view-toggle-target="list"] li')
+          .toArray()
           .map((el) => {
             const main = $(el)
               .find(
