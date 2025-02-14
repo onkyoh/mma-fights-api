@@ -7,6 +7,7 @@ const scrapeEvents = async () => {
   try {
     const response = await gotScraping({
       url: `${baseUrl}/fightcenter?group=major&schedule=upcoming`,
+      proxyUrl: process.env.PROXY_URL;
     });
 
     if (response.statusCode !== 200) {
