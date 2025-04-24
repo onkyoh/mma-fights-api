@@ -1,21 +1,19 @@
-import { config } from 'dotenv';
-import { createServer } from './config/server.js';
-import { connectDB } from './config/mongodb.js';
+import { config } from "dotenv";
+import { createServer } from "./config/server.js";
 
 config();
 
 const init = async () => {
-  try {
-    const db = await connectDB();
-    const app = createServer(db);
+	try {
+		const app = createServer();
 
-    const port = process.env.PORT || 1000;
-    app.listen(port, () => {
-      console.log(`Server listening on port ${port}`);
-    });
-  } catch (err) {
-    console.error('Failed to initialize application:', err);
-  }
+		const port = process.env.PORT || 1000;
+		app.listen(port, () => {
+			console.log(`Server listening on port ${port}`);
+		});
+	} catch (err) {
+		console.error("Failed to initialize application:", err);
+	}
 };
 
 init();
