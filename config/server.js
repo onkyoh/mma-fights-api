@@ -71,7 +71,6 @@ export const createServer = () => {
 		try {
 			const buffer = await fs.readFile(DATA_FILE_PATH);
 			const data = JSON.parse(buffer.toString());
-			return res.status(200).send(data.data[0].fights[0].fighterA.picture);
 			return res.status(200).send(data);
 		} catch (err) {
 			console.error("Error retrieving data:", err);
